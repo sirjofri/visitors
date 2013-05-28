@@ -2,11 +2,139 @@
 /*
 i think i should write a help-function to show the user advanced features
 */
-include "./vusers.inc";
 
-$a=10;
+include "./vconfig.inc";
+include "./dbconnect.inc";
+
+if(@$_GET['site']!="")
+{
+	if($_GET['site']=="timestatimage")
+	{
+///////////////////////////////////////////////////////////////////////
+//             BEGIN IMAGE                                           //
+///////////////////////////////////////////////////////////////////////
+header('Content-Type: image/png');
 
 include "./dbconnect.inc";
+
+$db=mysqli_connect($dbhost,$dbuser,$dbpasswd,$dbname);
+$result=mysqli_query($db,"SELECT * FROM statistics_time;") or die;
+$gesamt=0;
+while($ergebnis=mysqli_fetch_array($result))
+{
+	$gesamt=$gesamt+$ergebnis['number'];
+}
+
+
+$im=@imagecreatetruecolor(350,500) or die("Cannot initialize new GD image stream");
+imagesavealpha($im,true);
+$fill_color=imagecolorallocatealpha($im, 0,0,0,127);
+imagefill($im,0,0,$fill_color);
+$text_color=imagecolorallocate($im, 0,0,0);
+if($gesamt!=0)
+{
+$begin=5;
+imagestring($im,2,10,$begin,"Total: ".$gesamt,$text_color);
+$wood_color=imagecolorallocate($im,0,0,0);
+imagefilledrectangle($im,140,$begin+1,100*2+140,$begin+10,$wood_color);
+$result=mysqli_query($db,"SELECT * FROM statistics_time;");
+while($ergebnis=mysqli_fetch_array($result))
+{
+	$begin=$begin+20;
+	imagefilledrectangle($im,140,$begin,($ergebnis['number']/$gesamt*100*2+140),$begin+10,$wood_color);
+	imagestring($im,2,10,$begin,($ergebnis['time']<10?"0".$ergebnis['time']:$ergebnis['time'])."-".(($ergebnis['time']+1)<10?"0".($ergebnis['time']+1):($ergebnis['time']+1))." Uhr:   ".round($ergebnis['number']/$gesamt*100,2)."%",$text_color);
+}
+} else {
+imagestring($im,2,10,5,"ERROR: Division by 0",$text_color);
+imagestring($im,2,10,25,"Maybe there is no entry yet :-(",$text_color);
+}
+imagepng($im);
+imagedestroy($im);
+///////////////////////////////////////////////////////////////////////////
+//                 END   IMAGE                                           //
+///////////////////////////////////////////////////////////////////////////
+	} elseif(($_GET['site']=="init" || $_GET['site']=="reset") && $save==false)
+	{
+/*******************************
+initialize the database
+*******************************/
+
+//Check if database exists
+$db=mysqli_connect($dbhost,$dbuser,$dbpasswd,$dbname) or die("<b>Error:</b> Cannot connect to database <i>".$dbname."</i> on line 8!<br>");
+echo "Connected to database: <i>".$dbname."</i><br>";
+
+//check if table 'statistics' exists and destroy if necessary
+if(mysqli_fetch_array(mysqli_query($db,"SHOW TABLES WHERE Tables_in_".$dbname."='statistics';")))
+{
+	//destroy it
+	mysqli_query($db,"DROP TABLE 'statistics';");
+	echo "Table 'statistics' exists: <i>destroy</i><br>";
+}
+//create new table 'statistics'
+mysqli_query($db,"CREATE TABLE statistics ( id INT(11) AUTO_INCREMENT PRIMARY KEY, date INT(8), number INT(11) );");
+echo "Table 'statistics': <i>created</i><br>";
+
+//check if table 'statistics_time' exists and destroy if necessary
+if(mysqli_fetch_array(mysqli_query($db,"SHOW TABLES WHERE Tables_in_".$dbname."='statistics_time';")))
+{
+	//destroy it
+	mysqli_query($db,"DROP TABLE 'statistics_time';");
+	echo "Table 'statistics_time' exists: <i>destroy</i><br>";
+}
+//create new table 'statistics_time'
+mysqli_query($db,"CREATE TABLE statistics_time ( id INT(11) AUTO_INCREMENT PRIMARY KEY, time INT(2), number INT(11) );");
+echo "Table 'statistics_time': <i>created</i><br>";
+
+//filling table 'statistics_time'
+echo "Filling table 'statistics_time': <i>";
+for($i=0;$i<24;$i++)
+{
+	mysqli_query($db,"INSERT INTO statistics_time (id,time,number) VALUES (NULL,'".$i."','0');");
+	echo $i.", ";
+}
+echo "ready!</i><br>";
+
+echo "<b>Your system is ready to count!</b>";
+////////////////////////////////////////////
+// END INIT FILE                          //
+////////////////////////////////////////////
+	} elseif($_GET['site']=="count")
+	{
+////////////////////////////////////////////
+// BEGIN COUNT FILE                       //
+////////////////////////////////////////////
+	$date=date(Ymd);
+	$db=mysqli_connect($dbhost,$dbuser,$dbpasswd,$dbname);
+	$result=mysqli_query($db,"SELECT * FROM statistics WHERE date='".$date."';");
+	if($ergebnis=mysqli_fetch_array($result)) //if there is some visit yet
+	{
+		$number=$ergebnis['number']+1;
+		mysqli_query($db,"UPDATE statistics SET number='".$visitor."' WHERE date='".$date."';");
+		echo "updated day<br>";
+	} else { //if there is no visit today
+		mysqli_query($db,"INSERT INTO statistics (id,date,number) VALUES (NULL,'".$date."','1');");
+		echo "initialized day<br>";
+	}
+	mysqli_close($db);
+	$time=date("H");
+	$db=mysqli_connect($dbhost,$dbuser,$dbpasswd,$dbname);
+	$result=mysqli_query($db,"SELECT * FROM statistics_time WHERE time='".$time."';");
+	if($ergebnis=mysqli_fetch_array($result)) //if there is some visit yet
+	{
+		$number=$ergebnis['number']+1;
+		mysqli_query($db,"UPDATE statistics_time SET number='".$number."' WHERE time='".$time."';");
+		echo "updated time<br>";
+	} else { //if there is no initial visit yet
+		mysqli_query($db,"INSERT INTO statistics_time (id,time,number) VALUES (NULL,'".$time."','1');");
+		echo "initialized time<br>";
+	}
+	mysqli_close($db);
+
+/////////////////////////////////////////////
+// END COUNT FILE                          //
+/////////////////////////////////////////////
+	}
+} else {
 
 session_start();
 if($_SESSION['id']!="visitors")
@@ -159,14 +287,14 @@ switch($day) //Replace them with your language
 }
 $dateparted=str_split($inputdate); // e.g. 20130102
 $dateparsed=$dateparted[6].$dateparted[7].".".$dateparted[4].$dateparted[5].".".$dateparted[0].$dateparted[1].$dateparted[2].$dateparted[3];
-echo "<tr><td class=\"week\">".date('W',$datestamp)."</td><td class=\"day\">".($ergebnis['visitor']>=$a?"<b>".$day:$day).", ".($ergebnis['visitor']>=$a?$dateparsed."</b>":$dateparsed)."</td><td class=\"result\">".($ergebnis['visitor']>=$a?"<b>".$ergebnis['visitor']."</b>":$ergebnis['visitor'])."</td></tr>";
+echo "<tr><td class=\"week\">".date('W',$datestamp)."</td><td class=\"day\">".($ergebnis['number']>=$a?"<b>".$day:$day).", ".($ergebnis['number']>=$a?$dateparsed."</b>":$dateparsed)."</td><td class=\"result\">".($ergebnis['number']>=$a?"<b>".$ergebnis['number']."</b>":$ergebnis['number'])."</td></tr>";
 }
 
 echo "</table>";
 echo "</section>";
 echo "<section id=\"hourly\">";
 echo "<header><h2>hourly statistics</h2></header>";
-echo "<img src=\"./timestatimage.php\" alt=\"[IMG]\">";
+echo "<img src=\"./?site=timestatimage\" alt=\"[IMG]\">";
 echo "</section>";
 echo "<section id=\"space\">";
 echo "</section>";
@@ -191,6 +319,7 @@ echo "</body>";
 echo "</html>";
 
 mysqli_close($db);
+}
 }
 
 ?>
