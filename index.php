@@ -139,13 +139,13 @@ echo "<b>Your system is ready to count!</b>";
 session_start();
 if($_SESSION['id']!="visitors")
 {
-	if( !(isset($_POST['user'])&& isset($_POST['password'])))
+	if( !isset($_POST['user']) || !isset($_POST['password']))
 	{
 		echo "<!DOCTYPE html>\n";
 		echo "<html>\n";
 		echo "<head>\n";
 		echo "<meta charset=\"utf-8\">\n";
-		echo "<title>Visitors - login</title>\n";
+		echo "<title>visitors - login</title>\n";
 		echo "<style type=\"text/html\">\n";
 		echo "body { text-align:center;font-family:monospace; }\n";
 		echo "#box { width:300px;margin:20px auto;padding:0px;text-align:left; }\n";
@@ -155,14 +155,14 @@ if($_SESSION['id']!="visitors")
 		echo "<body>\n";
 		echo "<div id=\"box\">\n";
 		echo "<header>\n";
-		echo "<h1>Visitors - login</h1>\n";
+		echo "<h1>visitors - login</h1>\n";
 		echo "</header>\n";
 		echo "<section>\n";
 		echo "<header class=\"hidden\">\n";
 		echo "<h1>login</h1>\n";
 		echo "</header>\n";
 		echo "<form action=\"./\" method=\"post\">\n";
-		echo "Username: <input type=\"text\" name=\"user\"><br>\n";
+		echo "Username: <input type=\"text\" name=\"user\" onload=\"this.focus();\"><br>\n";
 		echo "Password: <input type=\"password\" name=\"password\"><br>\n";
 		echo "<input type=\"submit\" value=\"login\">\n";
 		echo "</form>\n";
