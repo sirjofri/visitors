@@ -133,10 +133,17 @@ echo "<b>Your system is ready to count!</b>";
 /////////////////////////////////////////////
 // END COUNT FILE                          //
 /////////////////////////////////////////////
+	} elseif($_GET['site']="validate")
+	{
+		echo "Information:<br><p>To validate you have to copy or save the source and paste it into a validator</p><p>it is not possible to validate the whole system with referer data!</p>";
 	}
 } else {
 
 session_start();
+if(@$_SESSION['id']=="")
+{
+$_SESSION['id']="dummy";
+}
 if($_SESSION['id']!="visitors")
 {
 	if( !isset($_POST['user']) || !isset($_POST['password']))
@@ -152,7 +159,7 @@ if($_SESSION['id']!="visitors")
 		echo ".hidden { display:none; }\n";
 		echo "</style>\n";
 		echo "</head>\n";
-		echo "<body>\n";
+		echo "<body onload=\"document.getElementById('userbox').focus();\">\n";
 		echo "<div id=\"box\">\n";
 		echo "<header>\n";
 		echo "<h1>visitors - login</h1>\n";
@@ -162,7 +169,7 @@ if($_SESSION['id']!="visitors")
 		echo "<h1>login</h1>\n";
 		echo "</header>\n";
 		echo "<form action=\"./\" method=\"post\">\n";
-		echo "Username: <input type=\"text\" name=\"user\" onload=\"this.focus();\"><br>\n";
+		echo "Username: <input type=\"text\" name=\"user\" id=\"userbox\"><br>\n";
 		echo "Password: <input type=\"password\" name=\"password\"><br>\n";
 		echo "<input type=\"submit\" value=\"login\">\n";
 		echo "</form>\n";
@@ -215,11 +222,16 @@ echo "#box { width:350px;margin:20px auto;padding:0px;text-align:left; }";
 echo "img { border:solid;border-width:1px; }";
 echo "#sidebar { position:fixed;right:50px;top:50px;text-align:right;border:solid;border-width:1px 1px 0px 1px;padding-right:10px; } ";
 echo "#sidebar > ul, #sidebar>ul>li { list-style-type:none; }";
-echo "#sidebar > ul>li>a { text-decoration:none;color:#000; }";
-echo "#sidebar>ul>li>a:hover { text-decoration:underline;cursor:pointer; }";
+echo "#sidebar > ul>li>a, #infobox a { text-decoration:none;color:#000; }";
+echo "#sidebar>ul>li>a:hover, #infobox a:hover { text-decoration:underline;cursor:pointer; }";
 echo "#sidebar>img { border:none; }";
 echo "#space {height:100px;}";
 echo "footer {position:fixed;margin:0px;bottom:0px;width:400px;left:50%;margin-left:-200px;text-align:center;background-color:#fff;border:solid;border-width:1px 1px 0px 1px; }";
+echo "#infobox { position:fixed;left:0px;top:0px;height:100%;width:100%;background-color:rgba(0,0,0,0.5);display:none; }";
+echo ".hiddenbox { position:fixed;left:50%;top:30%;background-color:#fff;border:solid;border-width:1px;border-color:#000;padding:20px; }";
+echo "#helpbox { width:400px;height:400px;margin-left:-200px;margin-top:-200px; }";
+echo "#informationbox { width:400px;height:400px;margin-left:-200px;margin-top:-200px; }";
+echo ".boxcloser { text-align:center; }";
 echo "</style>";
 echo "<script type=\"text/javascript\"><!--\n";
 echo "timeout=null;";
@@ -241,6 +253,32 @@ echo "if(from<element.offsetTop) {";
 echo "window.scrollBy(0,2);\n";
 echo "timeout=setTimeout(scroll_to,1,element);\n";
 echo "}";
+echo "}";
+echo "function show_help()";
+echo "{";
+echo "document.getElementById(\"informationbox\").style.display=\"none\";";
+echo "document.getElementById(\"infobox\").style.display=\"block\";";
+echo "document.getElementById(\"helpbox\").style.display=\"block\";";
+echo "}";
+echo "function hide_help()";
+echo "{";
+echo "document.getElementById(\"helpbox\").style.display=\"none\";";
+echo "document.getElementById(\"infobox\").style.display=\"none\";";
+echo "}";
+echo "function show_info(id)";
+echo "{";
+echo "var info=\"\";";
+echo "if(id==\"validate\")";
+echo "{ info=\"To validate you have to copy or save the source and paste it into a validator.<br><br>It is not possible to validate the whole system with referer data!\"; }";
+echo "document.getElementById(\"informationp\").innerHTML=info;";
+echo "document.getElementById(\"infobox\").style.display=\"block\";";
+echo "document.getElementById(\"helpbox\").style.display=\"none\";";
+echo "document.getElementById(\"informationbox\").style.display=\"block\";";
+echo "}";
+echo "function hide_info()";
+echo "{";
+echo "document.getElementById(\"informationbox\").style.display=\"none\";";
+echo "document.getElementById(\"infobox\").style.display=\"none\";";
 echo "}";
 echo "//--></script>";
 echo "</head>";
@@ -298,7 +336,20 @@ echo "<img src=\"./?site=timestatimage\" alt=\"[IMG]\">";
 echo "</section>";
 echo "<section id=\"space\">";
 echo "</section>";
+echo "<div id=\"infobox\">";
+echo "<section id=\"helpbox\" class=\"hiddenbox\">";
+echo "<header><h2>help</h2></header>";
+echo "<p>help section - [wip]</p>";
+echo "<p class=\"boxcloser\"><a onclick=\"hide_help();\">Close</a></p>";
+echo "</section>";
+echo "<section id=\"informationbox\" class=\"hiddenbox\">";
+echo "<header><h2>Information</h2></header>";
+echo "<p id=\"informationp\"></p>";
+echo "<p class=\"boxcloser\"><a onclick=\"hide_info();\">Close</a></p>";
+echo "</section>";
 echo "</div>";
+echo "</div>";
+echo "<aside>";
 echo "<section id=\"sidebar\">";
 echo "<header><h2>Contents</h2></header>";
 echo "<ul>";
@@ -308,10 +359,13 @@ echo "<li><a onclick=\"scroll_to(document.getElementById('box'));\" ondblclick=\
 echo "<li><a onclick=\"scroll_to(document.getElementById('daily'));\" ondblclick=\"document.getElementById('daily').scrollIntoView(true);\">daily statistics</a></li>";
 //echo "<li><a href=\"javascript:document.getElementById('hourly').scrollIntoView(true);\">hourly statistics</a></li>";
 echo "<li><a onclick=\"scroll_to(document.getElementById('hourly'));\" ondblclick=\"document.getElementById('hourly').scrollIntoView(true);\">hourly statistics</a></li>";
+echo "<li><a onclick=\"show_help();\">help</a></li>";
 echo "</ul>";
 //echo "<br><br><a href=\"http://jigsaw.w3.org/css-validator/check/referer\"><img style=\"border:0;width:88px;height:31px;\" src=\"http://jigsaw.w3.org/css-validator/images/vcss\" alt=\"Valid CSS!\"></a>";
-echo "<img src=\"http://www.w3.org/html/logo/badge/html5-badge-v-css3-performance-semantics.png\" width=\"38\" height=\"170\" alt=\"HTML5 Powered with CSS3 / Styling, Performance &amp; Integration, and Semantics\" title=\"HTML5 Powered with CSS3 / Styling, Performance &amp; Integration, and Semantics\" ondblclick=\"window.open('http://jigsaw.w3.org/css-validator/check/referer','_blank');\" onclick=\"location.href='http://validator.w3.org/check?uri=referer';\">";
+//echo "<img src=\"http://www.w3.org/html/logo/badge/html5-badge-v-css3-performance-semantics.png\" width=\"38\" height=\"170\" alt=\"HTML5 Powered with CSS3 / Styling, Performance &amp; Integration, and Semantics\" title=\"HTML5 Powered with CSS3 / Styling, Performance &amp; Integration, and Semantics\" ondblclick=\"window.open('http://jigsaw.w3.org/css-validator/check/referer','_blank');\" onclick=\"location.href='http://validator.w3.org/check?uri=referer';\">";
+echo "<img src=\"http://www.w3.org/html/logo/badge/html5-badge-v-css3-performance-semantics.png\" width=\"38\" height=\"170\" alt=\"HTML5 Powered with CSS3 / Styling, Performance &amp; Integration, and Semantics\" title=\"HTML5 Powered with CSS3 / Styling, Performance &amp; Integration, and Semantics\" onclick=\"show_info('validate');\">";
 echo "</section>";
+echo "</aside>";
 echo "<footer>";
 echo "<p>Latest update: ".date("d.m.Y H:i:s")."</p>";
 echo "</footer>";
