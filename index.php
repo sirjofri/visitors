@@ -20,9 +20,9 @@ include "./dbconnect.inc";
 $db=mysqli_connect($dbhost,$dbuser,$dbpasswd,$dbname);
 $result=mysqli_query($db,"SELECT * FROM statistics_time;") or die;
 $gesamt=0;
-while($ergebnis=mysqli_fetch_array($result))
+while($ergebnis0=mysqli_fetch_array($result))
 {
-	$gesamt=$gesamt+$ergebnis['number'];
+	$gesamt=$gesamt+$ergebnis0['number'];
 }
 
 
@@ -38,11 +38,11 @@ imagestring($im,2,10,$begin,"Total: ".$gesamt,$text_color);
 $wood_color=imagecolorallocate($im,0,0,0);
 imagefilledrectangle($im,140,$begin+1,100*2+140,$begin+10,$wood_color);
 $result=mysqli_query($db,"SELECT * FROM statistics_time;");
-while($ergebnis=mysqli_fetch_array($result))
+while($ergebnis1=mysqli_fetch_array($result))
 {
 	$begin=$begin+20;
-	imagefilledrectangle($im,140,$begin,($ergebnis['number']/$gesamt*100*2+140),$begin+10,$wood_color);
-	imagestring($im,2,10,$begin,($ergebnis['time']<10?"0".$ergebnis['time']:$ergebnis['time'])."-".(($ergebnis['time']+1)<10?"0".($ergebnis['time']+1):($ergebnis['time']+1))." Uhr:   ".round($ergebnis['number']/$gesamt*100,2)."%",$text_color);
+	imagefilledrectangle($im,140,$begin,($ergebnis1['number']/$gesamt*200+140),$begin+10,$wood_color);
+	imagestring($im,2,10,$begin,($ergebnis1['time']<10?"0".$ergebnis1['time']:$ergebnis1['time'])."-".(($ergebnis1['time']+1)<10?"0".($ergebnis1['time']+1):($ergebnis1['time']+1))."h:    ".round($ergebnis1['number']/$gesamt*100,2)."%",$text_color);
 }
 } else {
 imagestring($im,2,10,5,"ERROR: Division by 0",$text_color);
@@ -103,13 +103,13 @@ echo "<b>Your system is ready to count!</b>";
 ////////////////////////////////////////////
 // BEGIN COUNT FILE                       //
 ////////////////////////////////////////////
-	$date=date(Ymd);
+	$date=date("Ymd");
 	$db=mysqli_connect($dbhost,$dbuser,$dbpasswd,$dbname);
 	$result=mysqli_query($db,"SELECT * FROM statistics WHERE date='".$date."';");
 	if($ergebnis=mysqli_fetch_array($result)) //if there is some visit yet
 	{
 		$number=$ergebnis['number']+1;
-		mysqli_query($db,"UPDATE statistics SET number='".$visitor."' WHERE date='".$date."';");
+		mysqli_query($db,"UPDATE statistics SET number='".$number."' WHERE date='".$date."';");
 		echo "updated day<br>";
 	} else { //if there is no visit today
 		mysqli_query($db,"INSERT INTO statistics (id,date,number) VALUES (NULL,'".$date."','1');");
