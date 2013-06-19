@@ -19,10 +19,10 @@ include "./dbconnect.inc";
 
 $db=mysqli_connect($dbhost,$dbuser,$dbpasswd,$dbname);
 $result=mysqli_query($db,"SELECT * FROM statistics_time;") or die;
-$gesamt=0;
+$total=0;
 while($ergebnis0=mysqli_fetch_array($result))
 {
-	$gesamt=$gesamt+$ergebnis0['number'];
+	$total=$total+$ergebnis0['number'];
 }
 
 
@@ -31,18 +31,18 @@ imagesavealpha($im,true);
 $fill_color=imagecolorallocatealpha($im, 0,0,0,127);
 imagefill($im,0,0,$fill_color);
 $text_color=imagecolorallocate($im, 0,0,0);
-if($gesamt!=0)
+if($total!=0)
 {
 $begin=5;
-imagestring($im,2,10,$begin,"Total: ".$gesamt,$text_color);
+imagestring($im,2,10,$begin,"Total: ".$total,$text_color);
 $wood_color=imagecolorallocate($im,0,0,0);
 imagefilledrectangle($im,140,$begin+1,100*2+140,$begin+10,$wood_color);
 $result=mysqli_query($db,"SELECT * FROM statistics_time;");
 while($ergebnis1=mysqli_fetch_array($result))
 {
 	$begin=$begin+20;
-	imagefilledrectangle($im,140,$begin,($ergebnis1['number']/$gesamt*200+140),$begin+10,$wood_color);
-	imagestring($im,2,10,$begin,($ergebnis1['time']<10?"0".$ergebnis1['time']:$ergebnis1['time'])."-".(($ergebnis1['time']+1)<10?"0".($ergebnis1['time']+1):($ergebnis1['time']+1))."h:    ".round($ergebnis1['number']/$gesamt*100,2)."%",$text_color);
+	imagefilledrectangle($im,140,$begin,($ergebnis1['number']/$total*200+140),$begin+10,$wood_color);
+	imagestring($im,2,10,$begin,($ergebnis1['time']<10?"0".$ergebnis1['time']:$ergebnis1['time'])."-".(($ergebnis1['time']+1)<10?"0".($ergebnis1['time']+1):($ergebnis1['time']+1))."h:    ".round($ergebnis1['number']/$total*100,2)."%",$text_color);
 }
 } else {
 imagestring($im,2,10,5,"ERROR: Division by 0",$text_color);
