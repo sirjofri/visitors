@@ -205,7 +205,7 @@ if($_SESSION['id']!="visitors")
 
 $db=mysqli_connect($dbhost,$dbuser,$dbpasswd,$dbname);
 
-$result=mysqli_query($db,"SELECT * FROM statistics;");
+$result=mysqli_query($db,"SELECT * FROM statistics ORDER BY date DESC;");
 
 echo "<!DOCTYPE html>";
 echo "<html>";
@@ -232,6 +232,7 @@ echo ".hiddenbox { position:fixed;left:50%;top:30%;background-color:#fff;border:
 echo "#helpbox { width:400px;height:400px;margin-left:-200px;margin-top:-200px; }";
 echo "#informationbox { width:400px;height:400px;margin-left:-200px;margin-top:-200px; }";
 echo ".boxcloser { text-align:center; }";
+echo "#daily { height:300px;overflow:auto; }";
 echo "</style>";
 echo "<script type=\"text/javascript\"><!--\n";
 echo "timeout=null;";
